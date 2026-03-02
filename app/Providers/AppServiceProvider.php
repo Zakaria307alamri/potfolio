@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\Models\Setting;
 use App\Models\User;
+use Throwable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\App;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,12 +34,16 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Check if settings table schema is present.
-        if (Schema::hasTable('settings')) {
-            $settings = Setting::pluck('option_value', 'option_name')->toArray();
-            foreach ($settings as $key => $value) {
-                config(['settings.' . $key => $value]);
+        // Avoid hard-failing app boot when DB is unavailable (build/startup windows).
+        try {
+            if (Schema::hasTable('settings')) {
+                $settings = Setting::pluck('option_value', 'option_name')->toArray();
+                foreach ($settings as $key => $value) {
+                    config(['settings.' . $key => $value]);
+                }
             }
+        } catch (Throwable $th) {
+            // Continue boot without dynamic settings.
         }
 
         // Only allowed people can view the pulse.
