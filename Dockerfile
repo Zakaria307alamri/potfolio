@@ -46,7 +46,7 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-
 
 COPY . .
 COPY --from=frontend-builder /app/public/build ./public/build
-RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --no-scripts
 
 RUN chmod +x /var/www/html/scripts/render-start.sh \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache
