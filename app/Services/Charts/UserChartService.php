@@ -62,11 +62,9 @@ class UserChartService extends ChartService
         $groupKey = $isLessThanMonth ? 'day' : 'month';
         $dateExpression = $isLessThanMonth
             ? 'DATE(created_at)'
-            : match ($driver) {
-                'sqlite' => "strftime('%Y-%m', created_at)",
-                'pgsql' => "TO_CHAR(created_at, 'YYYY-MM')",
-                default => "DATE_FORMAT(created_at, '%Y-%m')",
-            };
+            : ($driver === 'sqlite'
+                ? "strftime('%Y-%m', created_at)"
+                : "DATE_FORMAT(created_at, '%Y-%m')");
 
         return User::selectRaw("{$dateExpression} as {$groupKey}, COUNT(id) as total")
             ->whereBetween('created_at', [$startDate, $endDate])
