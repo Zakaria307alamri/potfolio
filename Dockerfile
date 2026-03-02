@@ -42,10 +42,11 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-autoloader
 
 COPY . .
 COPY --from=frontend-builder /app/public/build ./public/build
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 
 RUN chmod +x /var/www/html/scripts/render-start.sh \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache
